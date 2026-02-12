@@ -1,0 +1,198 @@
+{
+  "templateKey": "TRANSPORT_JOB_IN",
+  "name": "Transport Job — India Domestic",
+  "description": "Full lifecycle workflow for India domestic transport jobs: request → receipt → vehicle assignment → rate entry → rate approval → dispatch → movement tracking → delivery & POD → clearance.",
+  "version": 1,
+  "isActive": true,
+  "entityType": "TransportRequest",
+  "steps": [
+    {
+      "stepKey": "REQUEST_CREATION",
+      "name": "Request Creation",
+      "order": 1,
+      "stepType": "DataEntry",
+      "isStartStep": true,
+      "assignedRoles": ["TransportCoordinator", "Admin"],
+      "description": "Create a new transport request — standalone, from CRM enquiry, or from freight job."
+    },
+    {
+      "stepKey": "RECEIPT",
+      "name": "Receipt / Acceptance",
+      "order": 2,
+      "stepType": "DataEntry",
+      "assignedRoles": ["TransportCoordinator", "TransportSupervisor", "Admin"],
+      "description": "Receive & validate the request, confirm cargo and route details."
+    },
+    {
+      "stepKey": "VEHICLE_ASSIGNMENT",
+      "name": "Vehicle Assignment",
+      "order": 3,
+      "stepType": "DataEntry",
+      "assignedRoles": ["TransportCoordinator", "FleetManager", "Admin"],
+      "description": "Assign transporter, vehicle type, vehicle number, driver details, and LR number."
+    },
+    {
+      "stepKey": "RATE_ENTRY",
+      "name": "Rate Entry",
+      "order": 4,
+      "stepType": "DataEntry",
+      "assignedRoles": ["TransportCoordinator", "Admin"],
+      "description": "Enter freight rate, detention, varai, loading, toll, other charges. System computes total."
+    },
+    {
+      "stepKey": "RATE_APPROVAL",
+      "name": "Rate Approval",
+      "order": 5,
+      "stepType": "Approval",
+      "assignedRoles": ["TransportManager", "FinanceApprover", "Admin"],
+      "description": "Approve or reject the rate. Rejection reverts to RATE_ENTRY."
+    },
+    {
+      "stepKey": "DISPATCH",
+      "name": "Dispatch",
+      "order": 6,
+      "stepType": "DataEntry",
+      "assignedRoles": ["TransportCoordinator", "FleetManager", "Admin"],
+      "description": "Confirm dispatch — system logs first movement milestone 'Dispatched'."
+    },
+    {
+      "stepKey": "IN_TRANSIT",
+      "name": "In Transit / Movement Tracking",
+      "order": 7,
+      "stepType": "DataEntry",
+      "assignedRoles": ["TransportCoordinator", "Driver", "Admin"],
+      "description": "Track movement milestones: dispatched, in-transit, reached origin, loading, loaded, reached destination."
+    },
+    {
+      "stepKey": "DELIVERY_POD",
+      "name": "Delivery & POD",
+      "order": 8,
+      "stepType": "DataEntry",
+      "assignedRoles": ["TransportCoordinator", "Admin"],
+      "description": "Record delivery details — POD number/date, challan, LR copy, e-way bill, damage/shortage notes."
+    },
+    {
+      "stepKey": "CLEARANCE",
+      "name": "Clearance",
+      "order": 9,
+      "stepType": "Approval",
+      "isEndStep": true,
+      "assignedRoles": ["TransportManager", "FinanceApprover", "Admin"],
+      "description": "Final clearance — marks the job as Cleared for billing/settlement."
+    }
+  ],
+  "transitions": [
+    { "fromStep": "REQUEST_CREATION", "toStep": "RECEIPT",             "condition": "auto" },
+    { "fromStep": "RECEIPT",          "toStep": "VEHICLE_ASSIGNMENT",  "condition": "auto" },
+    { "fromStep": "VEHICLE_ASSIGNMENT","toStep": "RATE_ENTRY",         "condition": "auto" },
+    { "fromStep": "RATE_ENTRY",       "toStep": "RATE_APPROVAL",      "condition": "auto" },
+    { "fromStep": "RATE_APPROVAL",    "toStep": "DISPATCH",           "condition": "approved" },
+    { "fromStep": "RATE_APPROVAL",    "toStep": "RATE_ENTRY",         "condition": "rejected" },
+    { "fromStep": "DISPATCH",         "toStep": "IN_TRANSIT",         "condition": "auto" },
+    { "fromStep": "IN_TRANSIT",       "toStep": "DELIVERY_POD",       "condition": "auto" },
+    { "fromStep": "DELIVERY_POD",     "toStep": "CLEARANCE",          "condition": "auto" }
+  ],
+  "fieldDefinitions": [
+    {
+      "stepKey": "REQUEST_CREATION",
+      "fields": [
+        { "fieldKey": "job_source",           "label": "Job Source",            "dataType": "Enum",       "isRequired": true,  "enumValues": ["Standalone","CRMEnquiry","FreightJob"] },
+        { "fieldKey": "source_reference_id",  "label": "Source Reference ID",   "dataType": "Guid",       "isRequired": false, "helpText": "CRM Enquiry ID or Freight Job ID if linked" },
+        { "fieldKey": "customer_id",          "label": "Customer",              "dataType": "Lookup",     "isRequired": true,  "lookupSource": "MasterService:Customers" },
+        { "fieldKey": "origin_city_id",       "label": "Origin City",           "dataType": "Lookup",     "isRequired": true,  "lookupSource": "MasterService:Cities" },
+        { "fieldKey": "destination_city_id",  "label": "Destination City",      "dataType": "Lookup",     "isRequired": true,  "lookupSource": "MasterService:Cities" },
+        { "fieldKey": "origin_address",       "label": "Origin Address",        "dataType": "Text",       "isRequired": false, "maxLength": 500 },
+        { "fieldKey": "destination_address",  "label": "Destination Address",   "dataType": "Text",       "isRequired": false, "maxLength": 500 },
+        { "fieldKey": "cargo_type",           "label": "Cargo Type",            "dataType": "Enum",       "isRequired": true,  "enumValues": ["General","Dangerous","Perishable","ODC"] },
+        { "fieldKey": "cargo_description",    "label": "Cargo Description",     "dataType": "Text",       "isRequired": true,  "maxLength": 1000 },
+        { "fieldKey": "cargo_weight_kg",      "label": "Weight (kg)",           "dataType": "Decimal",    "isRequired": false },
+        { "fieldKey": "number_of_packages",   "label": "No. of Packages",       "dataType": "Integer",    "isRequired": false },
+        { "fieldKey": "delivery_type",        "label": "Delivery Type",         "dataType": "Enum",       "isRequired": true,  "enumValues": ["DoorToDoor","PortToDoor","PortToPort","DoorToPort"] },
+        { "fieldKey": "priority",             "label": "Priority",              "dataType": "Enum",       "isRequired": true,  "enumValues": ["Normal","Urgent","Critical"] },
+        { "fieldKey": "requested_pickup_date","label": "Requested Pickup Date", "dataType": "Date",       "isRequired": false },
+        { "fieldKey": "expected_delivery_date","label": "Expected Delivery",    "dataType": "Date",       "isRequired": false },
+        { "fieldKey": "special_instructions", "label": "Special Instructions",  "dataType": "Text",       "isRequired": false, "maxLength": 2000 }
+      ]
+    },
+    {
+      "stepKey": "RECEIPT",
+      "fields": [
+        { "fieldKey": "received_by_notes",    "label": "Receipt Notes",         "dataType": "Text",       "isRequired": false, "maxLength": 1000 },
+        { "fieldKey": "cargo_verified",       "label": "Cargo Verified?",       "dataType": "Boolean",    "isRequired": true },
+        { "fieldKey": "route_confirmed",      "label": "Route Confirmed?",      "dataType": "Boolean",    "isRequired": true }
+      ]
+    },
+    {
+      "stepKey": "VEHICLE_ASSIGNMENT",
+      "fields": [
+        { "fieldKey": "transporter_id",       "label": "Transporter",           "dataType": "Lookup",     "isRequired": true,  "lookupSource": "TransportService:Transporters" },
+        { "fieldKey": "vehicle_type",         "label": "Vehicle Type",          "dataType": "Enum",       "isRequired": true,  "enumValues": ["Trailer40ft","Trailer20ft","ContainerTruck","OpenTruck","ClosedTruck","Tanker","Flatbed","Pickup","Car"] },
+        { "fieldKey": "vehicle_number",       "label": "Vehicle Number",        "dataType": "Text",       "isRequired": true,  "maxLength": 20 },
+        { "fieldKey": "driver_name",          "label": "Driver Name",           "dataType": "Text",       "isRequired": true,  "maxLength": 200 },
+        { "fieldKey": "driver_phone",         "label": "Driver Phone",          "dataType": "Text",       "isRequired": true,  "maxLength": 20 },
+        { "fieldKey": "lr_number",            "label": "LR Number",             "dataType": "Text",       "isRequired": false, "maxLength": 50 },
+        { "fieldKey": "lr_date",              "label": "LR Date",               "dataType": "Date",       "isRequired": false }
+      ]
+    },
+    {
+      "stepKey": "RATE_ENTRY",
+      "fields": [
+        { "fieldKey": "freight_amount",       "label": "Freight Amount",        "dataType": "Decimal",    "isRequired": true,  "helpText": "Base freight charge" },
+        { "fieldKey": "detention_amount",     "label": "Detention",             "dataType": "Decimal",    "isRequired": false },
+        { "fieldKey": "varai_amount",         "label": "Varai / Commission",    "dataType": "Decimal",    "isRequired": false },
+        { "fieldKey": "loading_charge",       "label": "Loading Charge",        "dataType": "Decimal",    "isRequired": false },
+        { "fieldKey": "toll_amount",          "label": "Toll Amount",           "dataType": "Decimal",    "isRequired": false },
+        { "fieldKey": "other_charges",        "label": "Other Charges",         "dataType": "Decimal",    "isRequired": false },
+        { "fieldKey": "rate_remarks",         "label": "Remarks",               "dataType": "Text",       "isRequired": false, "maxLength": 500 }
+      ]
+    },
+    {
+      "stepKey": "RATE_APPROVAL",
+      "fields": [
+        { "fieldKey": "approval_decision",    "label": "Decision",              "dataType": "Enum",       "isRequired": true,  "enumValues": ["Approved","Rejected"] },
+        { "fieldKey": "approval_remarks",     "label": "Approval Remarks",      "dataType": "Text",       "isRequired": false, "maxLength": 1000 }
+      ]
+    },
+    {
+      "stepKey": "DISPATCH",
+      "fields": [
+        { "fieldKey": "dispatch_date",        "label": "Dispatch Date",         "dataType": "DateTime",   "isRequired": true },
+        { "fieldKey": "dispatch_remarks",     "label": "Dispatch Remarks",      "dataType": "Text",       "isRequired": false, "maxLength": 500 },
+        { "fieldKey": "e_way_bill_number",    "label": "E-Way Bill Number",     "dataType": "Text",       "isRequired": false, "maxLength": 50, "helpText": "India GST E-Way Bill" },
+        { "fieldKey": "e_way_bill_date",      "label": "E-Way Bill Date",       "dataType": "Date",       "isRequired": false }
+      ]
+    },
+    {
+      "stepKey": "IN_TRANSIT",
+      "fields": [
+        { "fieldKey": "milestone",            "label": "Milestone",             "dataType": "Enum",       "isRequired": true,  "enumValues": ["Dispatched","InTransit","ReachedOrigin","Loading","Loaded","ReachedDestination","Completed"] },
+        { "fieldKey": "location_name",        "label": "Location",              "dataType": "Text",       "isRequired": false, "maxLength": 200 },
+        { "fieldKey": "latitude",             "label": "Latitude",              "dataType": "Decimal",    "isRequired": false },
+        { "fieldKey": "longitude",            "label": "Longitude",             "dataType": "Decimal",    "isRequired": false },
+        { "fieldKey": "movement_remarks",     "label": "Remarks",               "dataType": "Text",       "isRequired": false, "maxLength": 500 }
+      ]
+    },
+    {
+      "stepKey": "DELIVERY_POD",
+      "fields": [
+        { "fieldKey": "delivery_date",        "label": "Delivery Date",         "dataType": "DateTime",   "isRequired": true },
+        { "fieldKey": "delivery_status",      "label": "Delivery Status",       "dataType": "Enum",       "isRequired": true,  "enumValues": ["Full","Partial","Damaged"] },
+        { "fieldKey": "pod_number",           "label": "POD Number",            "dataType": "Text",       "isRequired": true,  "maxLength": 50 },
+        { "fieldKey": "pod_date",             "label": "POD Date",              "dataType": "Date",       "isRequired": true },
+        { "fieldKey": "challan_number",       "label": "Challan Number",        "dataType": "Text",       "isRequired": false, "maxLength": 50 },
+        { "fieldKey": "lr_copy_url",          "label": "LR Copy",              "dataType": "FileUpload",  "isRequired": false },
+        { "fieldKey": "e_way_bill_copy_url",  "label": "E-Way Bill Copy",      "dataType": "FileUpload",  "isRequired": false },
+        { "fieldKey": "damage_notes",         "label": "Damage Notes",          "dataType": "Text",       "isRequired": false, "maxLength": 1000 },
+        { "fieldKey": "short_quantity_notes", "label": "Short Quantity Notes",  "dataType": "Text",       "isRequired": false, "maxLength": 1000 }
+      ]
+    },
+    {
+      "stepKey": "CLEARANCE",
+      "fields": [
+        { "fieldKey": "clearance_decision",   "label": "Clearance Decision",    "dataType": "Enum",       "isRequired": true,  "enumValues": ["Cleared","Disputed"] },
+        { "fieldKey": "clearance_remarks",    "label": "Clearance Remarks",     "dataType": "Text",       "isRequired": false, "maxLength": 1000 },
+        { "fieldKey": "final_settlement_amount","label": "Final Settlement",    "dataType": "Decimal",    "isRequired": false }
+      ]
+    }
+  ]
+}

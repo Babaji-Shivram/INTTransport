@@ -1,0 +1,163 @@
+{
+  "templateKey": "TRANSPORT_JOB_AE",
+  "name": "Transport Job — UAE",
+  "description": "Workflow for UAE transport jobs: request → receipt → vehicle assignment → rate entry → rate approval → dispatch → movement tracking → delivery → clearance. No E-Way Bill step (not applicable in UAE). Currency is AED.",
+  "version": 1,
+  "isActive": true,
+  "entityType": "TransportRequest",
+  "steps": [
+    {
+      "stepKey": "REQUEST_CREATION",
+      "name": "Request Creation",
+      "order": 1,
+      "stepType": "DataEntry",
+      "isStartStep": true,
+      "assignedRoles": ["TransportCoordinator", "Admin"],
+      "description": "Create a new UAE transport request — standalone, from CRM enquiry, or from freight job."
+    },
+    {
+      "stepKey": "RECEIPT",
+      "name": "Receipt / Acceptance",
+      "order": 2,
+      "stepType": "DataEntry",
+      "assignedRoles": ["TransportCoordinator", "TransportSupervisor", "Admin"],
+      "description": "Receive & validate the request, confirm cargo and route details."
+    },
+    {
+      "stepKey": "VEHICLE_ASSIGNMENT",
+      "name": "Vehicle Assignment",
+      "order": 3,
+      "stepType": "DataEntry",
+      "assignedRoles": ["TransportCoordinator", "FleetManager", "Admin"],
+      "description": "Assign transporter, vehicle type, vehicle number, driver details."
+    },
+    {
+      "stepKey": "RATE_ENTRY",
+      "name": "Rate Entry",
+      "order": 4,
+      "stepType": "DataEntry",
+      "assignedRoles": ["TransportCoordinator", "Admin"],
+      "description": "Enter freight rate, detention, toll, other charges in AED. System computes total."
+    },
+    {
+      "stepKey": "RATE_APPROVAL",
+      "name": "Rate Approval",
+      "order": 5,
+      "stepType": "Approval",
+      "assignedRoles": ["TransportManager", "FinanceApprover", "Admin"],
+      "description": "Approve or reject the rate. Rejection reverts to RATE_ENTRY. UAE requires manager + finance dual approval for amounts > 5000 AED.",
+      "approvalRules": {
+        "dualApprovalThreshold": 5000,
+        "currency": "AED"
+      }
+    },
+    {
+      "stepKey": "DISPATCH",
+      "name": "Dispatch",
+      "order": 6,
+      "stepType": "DataEntry",
+      "assignedRoles": ["TransportCoordinator", "FleetManager", "Admin"],
+      "description": "Confirm dispatch — system logs first movement milestone 'Dispatched'."
+    },
+    {
+      "stepKey": "IN_TRANSIT",
+      "name": "In Transit / Movement Tracking",
+      "order": 7,
+      "stepType": "DataEntry",
+      "assignedRoles": ["TransportCoordinator", "Driver", "Admin"],
+      "description": "Track movement milestones: dispatched, in-transit, checkpoints, near destination, reached destination."
+    },
+    {
+      "stepKey": "DELIVERY",
+      "name": "Delivery Confirmation",
+      "order": 8,
+      "stepType": "DataEntry",
+      "assignedRoles": ["TransportCoordinator", "Admin"],
+      "description": "Record delivery details — POD, delivery note, damage/shortage notes. No LR or E-Way Bill required for UAE."
+    },
+    {
+      "stepKey": "CLEARANCE",
+      "name": "Clearance",
+      "order": 9,
+      "stepType": "Approval",
+      "isEndStep": true,
+      "assignedRoles": ["TransportManager", "FinanceApprover", "Admin"],
+      "description": "Final clearance — marks the job as Cleared for billing/settlement."
+    }
+  ],
+  "transitions": [
+    { "fromStep": "REQUEST_CREATION",   "toStep": "RECEIPT",              "condition": "auto" },
+    { "fromStep": "RECEIPT",            "toStep": "VEHICLE_ASSIGNMENT",   "condition": "auto" },
+    { "fromStep": "VEHICLE_ASSIGNMENT", "toStep": "RATE_ENTRY",           "condition": "auto" },
+    { "fromStep": "RATE_ENTRY",         "toStep": "RATE_APPROVAL",        "condition": "auto" },
+    { "fromStep": "RATE_APPROVAL",      "toStep": "DISPATCH",             "condition": "approved" },
+    { "fromStep": "RATE_APPROVAL",      "toStep": "RATE_ENTRY",           "condition": "rejected" },
+    { "fromStep": "DISPATCH",           "toStep": "IN_TRANSIT",           "condition": "auto" },
+    { "fromStep": "IN_TRANSIT",         "toStep": "DELIVERY",             "condition": "auto" },
+    { "fromStep": "DELIVERY",           "toStep": "CLEARANCE",            "condition": "auto" }
+  ],
+  "fieldDefinitions": [
+    {
+      "stepKey": "REQUEST_CREATION",
+      "fields": [
+        { "fieldKey": "job_source",           "label": "Job Source",            "dataType": "Enum",     "isRequired": true,  "enumValues": ["Standalone","CRMEnquiry","FreightJob"] },
+        { "fieldKey": "source_reference_id",  "label": "Source Reference ID",   "dataType": "Guid",     "isRequired": false },
+        { "fieldKey": "customer_name",        "label": "Customer Name",         "dataType": "String",   "isRequired": true },
+        { "fieldKey": "trn_number",           "label": "TRN Number",            "dataType": "String",   "isRequired": false, "helpText": "Tax Registration Number (UAE equivalent of GST)" },
+        { "fieldKey": "origin_location",      "label": "Origin Location",       "dataType": "Lookup",   "isRequired": true },
+        { "fieldKey": "destination_location",  "label": "Destination Location",  "dataType": "Lookup",   "isRequired": true },
+        { "fieldKey": "cargo_type",           "label": "Cargo Type",            "dataType": "Enum",     "isRequired": true },
+        { "fieldKey": "gross_weight_kg",      "label": "Gross Weight (Kg)",     "dataType": "Decimal",  "isRequired": true },
+        { "fieldKey": "vehicle_type_required","label": "Vehicle Type Required", "dataType": "Enum",     "isRequired": true },
+        { "fieldKey": "delivery_type",        "label": "Delivery Type",         "dataType": "Enum",     "isRequired": true }
+      ]
+    },
+    {
+      "stepKey": "VEHICLE_ASSIGNMENT",
+      "fields": [
+        { "fieldKey": "transporter_id",       "label": "Transporter",           "dataType": "Lookup",   "isRequired": true },
+        { "fieldKey": "vehicle_number",       "label": "Vehicle Number",        "dataType": "String",   "isRequired": true },
+        { "fieldKey": "vehicle_type",         "label": "Vehicle Type",          "dataType": "Enum",     "isRequired": true },
+        { "fieldKey": "driver_name",          "label": "Driver Name",           "dataType": "String",   "isRequired": true },
+        { "fieldKey": "driver_phone",         "label": "Driver Phone",          "dataType": "String",   "isRequired": true }
+      ]
+    },
+    {
+      "stepKey": "RATE_ENTRY",
+      "fields": [
+        { "fieldKey": "freight_rate",         "label": "Freight Rate (AED)",    "dataType": "Decimal",  "isRequired": true },
+        { "fieldKey": "detention_charges",    "label": "Detention Charges",     "dataType": "Decimal",  "isRequired": false },
+        { "fieldKey": "toll_charges",         "label": "Salik / Toll Charges",  "dataType": "Decimal",  "isRequired": false, "helpText": "Salik toll for Dubai routes" },
+        { "fieldKey": "other_charges",        "label": "Other Charges",         "dataType": "Decimal",  "isRequired": false },
+        { "fieldKey": "currency_code",        "label": "Currency",              "dataType": "String",   "isRequired": true,  "defaultValue": "AED" }
+      ]
+    },
+    {
+      "stepKey": "DELIVERY",
+      "fields": [
+        { "fieldKey": "delivery_date",        "label": "Delivery Date",         "dataType": "DateTime", "isRequired": true },
+        { "fieldKey": "received_by",          "label": "Received By",           "dataType": "String",   "isRequired": true },
+        { "fieldKey": "pod_number",           "label": "POD Number",            "dataType": "String",   "isRequired": false },
+        { "fieldKey": "delivery_status",      "label": "Delivery Status",       "dataType": "Enum",     "isRequired": true,  "enumValues": ["Full","Partial","Damaged"] },
+        { "fieldKey": "damage_notes",         "label": "Damage Notes",          "dataType": "String",   "isRequired": false }
+      ]
+    }
+  ],
+  "countryConfig": {
+    "countryCode": "AE",
+    "defaultCurrency": "AED",
+    "requiresEWayBill": false,
+    "requiresGST": false,
+    "requiresTRN": true,
+    "requiresLRDocument": false,
+    "salikTollApplicable": true,
+    "vatRate": 5.0,
+    "clearanceChecklist": {
+      "requiresPOD": true,
+      "requiresLR": false,
+      "requiresRateEntry": true,
+      "requiresDeliveryRecord": true,
+      "requiresEWayBill": false
+    }
+  }
+}

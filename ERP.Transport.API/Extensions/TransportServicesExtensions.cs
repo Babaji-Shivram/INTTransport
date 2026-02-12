@@ -1,0 +1,49 @@
+using ERP.Transport.Application.Interfaces;
+using ERP.Transport.Application.Mapping;
+using ERP.Transport.Application.Services;
+using ERP.Transport.Infrastructure.Data;
+using ERP.Transport.Infrastructure.Repositories;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Microsoft.EntityFrameworkCore;
+
+namespace ERP.Transport.API.Extensions;
+
+/// <summary>
+/// DI registration — DbContext, AutoMapper, FluentValidation, Scrutor scan, Repository, UnitOfWork.
+/// Mirrors CRM's CrmServicesExtensions.
+/// </summary>
+public static class TransportServicesExtensions
+{
+    public static IServiceCollection AddTransportServices(
+        this IServiceCollection services, IConfiguration configuration)
+    {
+        // ── DbContext ──────────────────────────────────────────
+        services.AddHttpContextAccessor(); // Required for DataScopeService → UserContext
+        services.AddDbContext<TransportDbContext>(options =>
+            options.UseSqlServer(
+                configuration.GetConnectionString("DefaultConnection"),
+                sql => sql.MigrationsAssembly(typeof(TransportDbContext).Assembly.FullName)));
+
+        // ── AutoMapper ─────────────────────────────────────────
+        services.AddAutoMapper(typeof(TransportMappingProfile).Assembly);
+
+        // ── FluentValidation ───────────────────────────────────
+        services.AddFluentValidationAutoValidation();
+        services.AddValidatorsFromAssemblyContaining<TransportMappingProfile>();
+
+        // ── Scrutor auto-scan (Service + Repository) ───────────
+        services.Scan(scan => scan
+            .FromAssembliesOf(typeof(TransportJobService), typeof(Repository<>))
+            .AddClasses(classes => classes.Where(type =>
+                type.Name.EndsWith("Service") || type.Name.EndsWith("Repository")))
+            .AsImplementedInterfaces()
+            .WithScopedLifetime());
+
+        // ── Generic Repository & UnitOfWork ────────────────────
+        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        return services;
+    }
+}
