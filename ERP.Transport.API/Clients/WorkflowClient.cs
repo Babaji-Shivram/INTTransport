@@ -28,7 +28,7 @@ public class WorkflowClient : IWorkflowClient
         try
         {
             var response = await _httpClient.PostAsJsonAsync(
-                "api/v1/workflow/internal/instances", request);
+                "internal/workflow/instances", request);
             response.EnsureSuccessStatusCode();
             return await response.Content
                 .ReadFromJsonAsync<WorkflowInstanceResponseDto>();
@@ -47,7 +47,7 @@ public class WorkflowClient : IWorkflowClient
         try
         {
             var response = await _httpClient.PostAsJsonAsync(
-                $"api/v1/workflow/internal/instances/{instanceId}/submit", request);
+                $"internal/workflow/instances/{instanceId}/submit-step", request);
             response.EnsureSuccessStatusCode();
             return await response.Content
                 .ReadFromJsonAsync<WorkflowInstanceResponseDto>();
@@ -65,7 +65,7 @@ public class WorkflowClient : IWorkflowClient
         try
         {
             var response = await _httpClient.PostAsJsonAsync(
-                $"api/v1/workflow/internal/instances/{instanceId}/advance", request);
+                $"internal/workflow/instances/{instanceId}/advance", request);
             response.EnsureSuccessStatusCode();
             return await response.Content
                 .ReadFromJsonAsync<WorkflowInstanceResponseDto>();
@@ -83,7 +83,7 @@ public class WorkflowClient : IWorkflowClient
         try
         {
             var response = await _httpClient.PostAsJsonAsync(
-                $"api/v1/workflow/internal/instances/{instanceId}/approve", request);
+                $"internal/workflow/instances/{instanceId}/approve", request);
             response.EnsureSuccessStatusCode();
             return await response.Content
                 .ReadFromJsonAsync<WorkflowInstanceResponseDto>();
@@ -101,7 +101,7 @@ public class WorkflowClient : IWorkflowClient
         try
         {
             var response = await _httpClient.PostAsJsonAsync(
-                $"api/v1/workflow/internal/instances/{instanceId}/reject", request);
+                $"internal/workflow/instances/{instanceId}/reject", request);
             response.EnsureSuccessStatusCode();
             return await response.Content
                 .ReadFromJsonAsync<WorkflowInstanceResponseDto>();
@@ -118,7 +118,7 @@ public class WorkflowClient : IWorkflowClient
         try
         {
             var response = await _httpClient.PostAsync(
-                $"api/v1/workflow/internal/instances/{instanceId}/cancel", null);
+                $"internal/workflow/instances/{instanceId}/cancel", null);
             response.EnsureSuccessStatusCode();
             return await response.Content
                 .ReadFromJsonAsync<WorkflowInstanceResponseDto>();
@@ -137,7 +137,7 @@ public class WorkflowClient : IWorkflowClient
         try
         {
             return await _httpClient.GetFromJsonAsync<WorkflowStepDefinitionDto>(
-                $"api/v1/workflow/internal/steps/{stepId}/fields");
+                $"internal/workflow/metadata/steps/{stepId}/fields");
         }
         catch (Exception ex)
         {
@@ -151,7 +151,7 @@ public class WorkflowClient : IWorkflowClient
         try
         {
             return await _httpClient.GetFromJsonAsync<WorkflowStepFullDefinitionDto>(
-                $"api/v1/workflow/internal/steps/{stepId}/full-definition");
+                $"internal/workflow/metadata/steps/{stepId}/full-definition");
         }
         catch (Exception ex)
         {
@@ -165,8 +165,11 @@ public class WorkflowClient : IWorkflowClient
     {
         try
         {
-            return await _httpClient.GetFromJsonAsync<WorkflowTemplateLookupDto>(
-                $"api/v1/workflow/internal/templates/lookup?code={Uri.EscapeDataString(templateCode)}&country={Uri.EscapeDataString(countryCode)}");
+            var request = new { Module = "Transport", TemplateCode = templateCode, CountryCode = countryCode };
+            var response = await _httpClient.PostAsJsonAsync(
+                "internal/workflow/metadata/templates/lookup", request);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<WorkflowTemplateLookupDto>();
         }
         catch (Exception ex)
         {
@@ -183,7 +186,7 @@ public class WorkflowClient : IWorkflowClient
         try
         {
             var result = await _httpClient.GetFromJsonAsync<List<WorkflowInboxItemDto>>(
-                $"api/v1/workflow/internal/inbox?userId={userId}");
+                $"internal/workflow/inbox/{userId}");
             return result ?? Enumerable.Empty<WorkflowInboxItemDto>();
         }
         catch (Exception ex)
