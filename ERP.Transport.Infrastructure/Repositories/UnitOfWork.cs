@@ -1,4 +1,4 @@
-using ERP.Transport.Application.Interfaces;
+using ERP.Transport.Application.Interfaces.Repositories;
 using ERP.Transport.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore.Storage;
 

@@ -1,5 +1,6 @@
 using AutoMapper;
-using ERP.Transport.Application.Interfaces;
+using ERP.Transport.Application.Interfaces.Services;
+using ERP.Transport.Application.Interfaces.Repositories;
 using ERP.Transport.Domain.Entities;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;

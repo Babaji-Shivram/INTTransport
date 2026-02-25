@@ -1,5 +1,6 @@
-using ERP.Transport.Application.DTOs;
-using ERP.Transport.Application.Interfaces;
+using ERP.Transport.Application.DTOs.Common;
+using ERP.Transport.Application.Interfaces.Repositories;
+using ERP.Transport.Application.Interfaces.Services;
 using ERP.Transport.Domain.Entities;
 using ERP.Transport.Domain.Enums;
 

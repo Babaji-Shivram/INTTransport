@@ -1,7 +1,8 @@
 using AutoMapper;
-using ERP.Transport.Application.DTOs;
-using ERP.Transport.Application.Interfaces;
+using ERP.Transport.Application.DTOs.Integration;
+using ERP.Transport.Application.Interfaces.Repositories;
 using ERP.Transport.Application.Interfaces.Clients;
+using ERP.Transport.Application.Interfaces.Services;
 using ERP.Transport.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using System.Globalization;

@@ -1,6 +1,6 @@
-using ERP.Transport.Application.DTOs;
+using ERP.Transport.Application.DTOs.Job;
 using ERP.Transport.Application.DTOs.Workflow;
-using ERP.Transport.Application.Interfaces;
+using ERP.Transport.Application.Interfaces.Services;
 using ERP.Transport.API.Security;
 using EPR.Shared.Contracts.Responses;
 using Microsoft.AspNetCore.Authorization;

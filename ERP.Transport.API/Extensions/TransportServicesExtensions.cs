@@ -1,4 +1,4 @@
-using ERP.Transport.Application.Interfaces;
+using ERP.Transport.Application.Interfaces.Repositories;
 using ERP.Transport.Application.Mapping;
 using ERP.Transport.Application.Services;
 using ERP.Transport.Infrastructure.Data;

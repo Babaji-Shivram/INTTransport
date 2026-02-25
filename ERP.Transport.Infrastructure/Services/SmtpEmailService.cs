@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Mail;
-using ERP.Transport.Application.Interfaces;
+using ERP.Transport.Application.Interfaces.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 

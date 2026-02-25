@@ -1,5 +1,6 @@
-using ERP.Transport.Application.DTOs;
-using ERP.Transport.Application.Interfaces;
+using ERP.Transport.Application.DTOs.Fleet;
+using ERP.Transport.Application.DTOs.Common;
+using ERP.Transport.Application.Interfaces.Services;
 using EPR.Shared.Contracts.Extensions;
 using EPR.Shared.Contracts.Responses;
 using Microsoft.AspNetCore.Mvc;

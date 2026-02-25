@@ -1,5 +1,5 @@
 using ERP.Transport.Application.Interfaces.Clients;
-using ERP.Transport.API.Clients;
+using ERP.Transport.Application.Services.Clients;
 using Polly;
 using Polly.Extensions.Http;
 

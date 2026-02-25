@@ -1,7 +1,9 @@
 using System.Reflection;
 using ClosedXML.Excel;
-using ERP.Transport.Application.DTOs;
-using ERP.Transport.Application.Interfaces;
+using ERP.Transport.Application.DTOs.Job;
+using ERP.Transport.Application.DTOs.Common;
+using ERP.Transport.Application.Interfaces.Services;
+using ERP.Transport.Application.Interfaces.Repositories;
 using ERP.Transport.Domain.Entities;
 
 namespace ERP.Transport.Application.Services;
