@@ -7,7 +7,13 @@ public abstract class BaseEntity
 {
     public Guid Id { get; set; }
 
+    public bool IsActive { get; set; } = true;
+
     public bool IsDeleted { get; set; }
+
+    public Guid? DeletedBy { get; set; }
+
+    public DateTime? DeletedAt { get; set; }
 
     public bool IsDefault { get; set; }
 
