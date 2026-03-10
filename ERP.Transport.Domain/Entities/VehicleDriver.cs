@@ -11,7 +11,6 @@ public class VehicleDriver : BaseEntity
     public string? PhoneNumber { get; set; }
     public string? EmergencyContact { get; set; }
     public DateTime? LicenseExpiry { get; set; }
-    public bool IsActive { get; set; } = true;
     public DateTime AssignedDate { get; set; }
     public DateTime? UnassignedDate { get; set; }
 

@@ -35,7 +35,6 @@ public class FleetVehicle : BaseEntity
     public decimal? VolumeCapacityCBM { get; set; }
 
     // ── Status ──────────────────────────────────────────────────
-    public bool IsActive { get; set; } = true;
     public FleetVehicleStatus CurrentStatus { get; set; }
     public decimal? CurrentOdometerKm { get; set; }
 

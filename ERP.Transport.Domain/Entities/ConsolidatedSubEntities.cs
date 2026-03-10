@@ -33,8 +33,6 @@ public class ConsolidatedVehicle : BaseEntity
     public DateTime? LRDate { get; set; }
     public string? MemoCopyUrl { get; set; }
 
-    public bool IsActive { get; set; } = true;
-
     // ── Navigation ──────────────────────────────────────────────
     public ConsolidatedTrip ConsolidatedTrip { get; set; } = null!;
     public Transporter Transporter { get; set; } = null!;

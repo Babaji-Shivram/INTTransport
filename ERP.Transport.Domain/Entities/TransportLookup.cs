@@ -23,9 +23,6 @@ public class TransportLookup : BaseEntity
     /// <summary>Sort order for dropdowns.</summary>
     public int DisplayOrder { get; set; }
 
-    /// <summary>Soft-disable without deleting.</summary>
-    public bool IsActive { get; set; } = true;
-
     /// <summary>Country scoping — null means global.</summary>
     public string? CountryCode { get; set; }
 }

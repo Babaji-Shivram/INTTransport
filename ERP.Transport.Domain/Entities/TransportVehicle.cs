@@ -27,9 +27,6 @@ public class TransportVehicle : BaseEntity
     public DateTime? LRDate { get; set; }
     public string? MemoCopyUrl { get; set; }
 
-    // ── Status ──────────────────────────────────────────────────
-    public bool IsActive { get; set; } = true;
-
     // ── Navigation ──────────────────────────────────────────────
     public TransportRequest TransportRequest { get; set; } = null!;
     public Transporter Transporter { get; set; } = null!;
