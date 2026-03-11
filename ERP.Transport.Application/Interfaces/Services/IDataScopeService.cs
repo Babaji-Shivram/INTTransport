@@ -1,40 +1,11 @@
-using System.Linq.Expressions;
+using EPR.Shared.Contracts.Models;
 
 namespace ERP.Transport.Application.Interfaces.Services;
 
 /// <summary>
-/// Data scope levels — controls how much data a user can access.
-/// All > Branch > Own.
-/// </summary>
-public enum DataScopeLevel
-{
-    All,
-    Branch,
-    Own,
-    None
-}
-
-/// <summary>
-/// Result of a scope check — includes the resolved scope level and user context.
-/// </summary>
-public class DataScopeResult
-{
-    public DataScopeLevel Level { get; set; }
-    public Guid UserId { get; set; }
-    public List<Guid> AllowedBranches { get; set; } = new();
-    public List<Guid> AllowedCountries { get; set; } = new();
-
-    public static DataScopeResult NoAccess(Guid userId) => new()
-        { Level = DataScopeLevel.None, UserId = userId };
-
-    public static DataScopeResult FullAccess(Guid userId) => new()
-        { Level = DataScopeLevel.All, UserId = userId };
-}
-
-/// <summary>
 /// Service-layer data scoping — determines what data the current user can access
 /// based on their permission scope (All / Branch / Own).
-/// Mirrors CRM's DataScopeService pattern.
+/// Uses SharedLibrary's DataScopeResult and DataScopeLevel types.
 /// </summary>
 public interface IDataScopeService
 {

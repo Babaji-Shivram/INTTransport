@@ -49,7 +49,7 @@ app.UseResponseCompression();
 app.UseRateLimiter();
 app.UseCorrelationId();
 app.UseAuthentication();
-app.UseMiddleware<InternalApiMiddleware>();
+app.UseMiddleware<ERP.Transport.API.Middleware.InternalApiMiddleware>();
 app.UseGatewayContext();
 app.UseAuthorization();
 
