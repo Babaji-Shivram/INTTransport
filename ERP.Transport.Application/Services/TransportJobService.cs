@@ -365,7 +365,7 @@ public class TransportJobService : ITransportJobService
         // Cancel workflow if running
         if (entity.WorkflowInstanceId.HasValue)
         {
-            try { await _workflowClient.CancelAsync(entity.WorkflowInstanceId.Value); }
+            try { await _workflowClient.CancelAsync(entity.WorkflowInstanceId.Value, userId, new CancelWorkflowDto { Reason = "Job cancelled" }); }
             catch (Exception ex) { _logger.LogWarning(ex, "Failed to cancel workflow for job {JobId}", id); }
         }
     }
@@ -1440,12 +1440,21 @@ public class TransportJobService : ITransportJobService
             var templateCode = _configuration[$"WorkflowTemplates:Transport_{entity.CountryCode}:TemplateCode"]
                 ?? $"TRANSPORT_JOB_{entity.CountryCode}";
 
-            var result = await _workflowClient.CreateInstanceAsync(new CreateWorkflowInstanceDto
+            // Step 1: Lookup template to get the active WorkflowVersionId
+            var template = await _workflowClient.LookupTemplateAsync(templateCode, entity.CountryCode);
+            if (template?.ActiveVersionId == null)
             {
-                TemplateCode = templateCode,
+                _logger.LogWarning("No active workflow template found for {TemplateCode}/{CountryCode}. Job created without workflow.",
+                    templateCode, entity.CountryCode);
+                return;
+            }
+
+            // Step 2: Create workflow instance using WorkflowVersionId
+            var result = await _workflowClient.CreateInstanceAsync(userId, new CreateWorkflowInstanceDto
+            {
+                WorkflowVersionId = template.ActiveVersionId.Value,
                 BusinessKey = $"TRANSPORT:Job:{entity.Id}",
-                CountryCode = entity.CountryCode,
-                InitiatorUserId = userId
+                InitialAssigneeUserId = userId
             });
 
             if (result != null)
@@ -1470,7 +1479,7 @@ public class TransportJobService : ITransportJobService
         try
         {
             var result = await _workflowClient.AdvanceAsync(entity.WorkflowInstanceId.Value,
-                new AdvanceWorkflowDto { UserId = userId, Remarks = remarks });
+                userId, new AdvanceWorkflowDto { Remarks = remarks });
 
             if (result != null)
             {
