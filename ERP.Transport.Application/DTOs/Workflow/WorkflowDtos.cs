@@ -1,41 +1,55 @@
 namespace ERP.Transport.Application.DTOs.Workflow;
 
 // ═══════════════════════════════════════════════════════════════
-//  Workflow client DTOs — mirrors Workflow MS internal API
+//  Workflow client DTOs — matches Workflow MS internal API contracts
 // ═══════════════════════════════════════════════════════════════
 
 public class CreateWorkflowInstanceDto
 {
-    public string TemplateCode { get; set; } = null!;
+    public Guid WorkflowVersionId { get; set; }
     public string BusinessKey { get; set; } = null!;
-    public string? CountryCode { get; set; }
-    public Guid? InitiatorUserId { get; set; }
+    public Guid? InitialAssigneeUserId { get; set; }
+    public string? InitialDataJson { get; set; }
+    public string? Remarks { get; set; }
+    public string? IdempotencyKey { get; set; }
 }
 
 public class SubmitStepDataDto
 {
-    public Guid StepId { get; set; }
-    public Dictionary<string, object?> Data { get; set; } = new();
+    public Guid StepDefId { get; set; }
+    public string DataJson { get; set; } = null!;
+    public string? Remarks { get; set; }
+    public bool MarkComplete { get; set; } = true;
 }
 
 public class AdvanceWorkflowDto
 {
-    public Guid? UserId { get; set; }
+    public Guid? TransitionId { get; set; }
     public string? Remarks { get; set; }
 }
 
 public class ApproveWorkflowDto
 {
-    public Guid StepId { get; set; }
-    public Guid UserId { get; set; }
+    public Guid StepDefId { get; set; }
     public string? Remarks { get; set; }
 }
 
 public class RejectWorkflowDto
 {
-    public Guid StepId { get; set; }
-    public Guid UserId { get; set; }
-    public string Reason { get; set; } = null!;
+    public Guid StepDefId { get; set; }
+    public string? Remarks { get; set; }
+}
+
+public class CancelWorkflowDto
+{
+    public string? Reason { get; set; }
+}
+
+public class AssignWorkflowDto
+{
+    public Guid StepDefId { get; set; }
+    public Guid AssigneeUserId { get; set; }
+    public string? Remarks { get; set; }
 }
 
 // ── Response DTOs ───────────────────────────────────────────────
@@ -83,6 +97,7 @@ public class WorkflowTemplateLookupDto
     public Guid TemplateId { get; set; }
     public string TemplateCode { get; set; } = null!;
     public string TemplateName { get; set; } = null!;
+    public Guid? ActiveVersionId { get; set; }
 }
 
 public class WorkflowInboxItemDto
