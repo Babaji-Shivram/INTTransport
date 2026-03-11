@@ -1,4 +1,5 @@
 using ERP.Transport.Domain.Entities;
+using EPR.Shared.Contracts.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Transport.Infrastructure.Data;
@@ -69,5 +70,9 @@ public class TransportDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(TransportDbContext).Assembly);
+
+        // SharedLibrary: global soft-delete filter + audit log table
+        modelBuilder.ApplySoftDeleteFilter();
+        modelBuilder.ConfigureAuditLog();
     }
 }

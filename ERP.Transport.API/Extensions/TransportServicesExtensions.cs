@@ -3,6 +3,7 @@ using ERP.Transport.Application.Mapping;
 using ERP.Transport.Application.Services;
 using ERP.Transport.Infrastructure.Data;
 using ERP.Transport.Infrastructure.Repositories;
+using EPR.Shared.Contracts.Extensions;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
@@ -20,10 +21,26 @@ public static class TransportServicesExtensions
     {
         // ── DbContext ──────────────────────────────────────────
         services.AddHttpContextAccessor(); // Required for DataScopeService → UserContext
-        services.AddDbContext<TransportDbContext>(options =>
+        services.AddDbContext<TransportDbContext>((sp, options) =>
+        {
             options.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection"),
-                sql => sql.MigrationsAssembly(typeof(TransportDbContext).Assembly.FullName)));
+                sql => sql.MigrationsAssembly(typeof(TransportDbContext).Assembly.FullName));
+
+            // SharedLibrary: audit interceptor
+            var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+
+            options.AddAuditInterceptor(
+                currentUserIdProvider: () =>
+                {
+                    var userId = httpContextAccessor.HttpContext?.GetUserContext()?.UserId;
+                    return Guid.TryParse(userId, out var guid) ? guid : null;
+                },
+                currentUserEmailProvider: () => httpContextAccessor.HttpContext?.GetUserContext()?.Email,
+                correlationIdProvider: () => httpContextAccessor.HttpContext?.GetCorrelationId(),
+                ipAddressProvider: () => httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString()
+            );
+        });
 
         // ── AutoMapper ─────────────────────────────────────────
         services.AddAutoMapper(typeof(TransportMappingProfile).Assembly);
