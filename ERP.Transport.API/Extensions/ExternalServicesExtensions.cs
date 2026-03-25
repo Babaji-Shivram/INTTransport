@@ -77,6 +77,17 @@ public static class ExternalServicesExtensions
         .AddPolicyHandler(GetRetryPolicy(retryCount, retryBaseDelayMs))
         .AddPolicyHandler(GetCircuitBreakerPolicy());
 
+        // ── Freight Client (for callbacks when transport job completes) ──
+        services.AddHttpClient("FreightService", client =>
+        {
+            client.BaseAddress = new Uri(externalServices["FreightServiceUrl"] ?? "http://localhost:5005");
+            client.DefaultRequestHeaders.Add("X-Internal-Key", internalApiKey);
+            client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
+        })
+        .AddPolicyHandler(GetRetryPolicy(retryCount, retryBaseDelayMs))
+        .AddPolicyHandler(GetCircuitBreakerPolicy());
+        services.AddScoped<IFreightClient, FreightClient>();
+
         return services;
     }
 

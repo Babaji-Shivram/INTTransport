@@ -40,6 +40,7 @@ public class TransportJobService : ITransportJobService
     private readonly IWorkflowClient _workflowClient;
     private readonly IDataScopeService _dataScopeService;
     private readonly IConfiguration _configuration;
+    private readonly IFreightClient _freightClient;
     private readonly ILogger<TransportJobService> _logger;
 
     public TransportJobService(
@@ -61,6 +62,7 @@ public class TransportJobService : ITransportJobService
         IMapper mapper,
         IWorkflowClient workflowClient,
         IDataScopeService dataScopeService,
+        IFreightClient freightClient,
         IConfiguration configuration,
         ILogger<TransportJobService> logger)
     {
@@ -82,6 +84,7 @@ public class TransportJobService : ITransportJobService
         _mapper = mapper;
         _workflowClient = workflowClient;
         _dataScopeService = dataScopeService;
+        _freightClient = freightClient;
         _configuration = configuration;
         _logger = logger;
     }
@@ -562,6 +565,7 @@ public class TransportJobService : ITransportJobService
 
         await _unitOfWork.SaveChangesAsync();
         await AdvanceWorkflowAsync(job, userId, "Delivery recorded");
+        NotifyFreightIfApplicable(job, "TRANSPORT_DELIVERED", "Transport delivery recorded");
 
         return _mapper.Map<TransportJobDto>(job);
     }
@@ -587,6 +591,7 @@ public class TransportJobService : ITransportJobService
 
         await _unitOfWork.SaveChangesAsync();
         await AdvanceWorkflowAsync(job, userId, "Job cleared — ready for billing");
+        NotifyFreightIfApplicable(job, "TRANSPORT_COMPLETED", "Transport job cleared — ready for billing");
 
         return _mapper.Map<TransportJobDto>(job);
     }
@@ -1493,6 +1498,37 @@ public class TransportJobService : ITransportJobService
         {
             _logger.LogWarning(ex, "Failed to advance workflow for job {JobId}", entity.Id);
         }
+    }
+
+    /// <summary>
+    /// Sends a fire-and-forget callback to Freight MS if this transport job originated from a freight job.
+    /// </summary>
+    private void NotifyFreightIfApplicable(TransportRequest job, string eventName, string? remarks = null)
+    {
+        if (job.Source != JobSource.FreightJob || !job.SourceReferenceId.HasValue)
+            return;
+
+        var freightJobId = job.SourceReferenceId.Value;
+        var payload = new TransportCallbackPayload
+        {
+            Event = eventName,
+            TransportJobNumber = job.RequestNumber,
+            Status = job.Status.ToString(),
+            Remarks = remarks
+        };
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _freightClient.SendCallbackAsync(freightJobId, payload);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "Failed to notify Freight for transport job {RequestNumber}", job.RequestNumber);
+            }
+        });
     }
 
     private static System.Linq.Expressions.Expression<Func<TransportRequest, bool>> BuildJobPredicate(
