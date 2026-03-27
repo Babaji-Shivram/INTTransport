@@ -27,19 +27,8 @@ public static class TransportServicesExtensions
                 configuration.GetConnectionString("DefaultConnection"),
                 sql => sql.MigrationsAssembly(typeof(TransportDbContext).Assembly.FullName));
 
-            // SharedLibrary: audit interceptor
-            var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
-
-            options.AddAuditInterceptor(
-                currentUserIdProvider: () =>
-                {
-                    var userId = httpContextAccessor.HttpContext?.GetUserContext()?.UserId;
-                    return Guid.TryParse(userId, out var guid) ? guid : null;
-                },
-                currentUserEmailProvider: () => httpContextAccessor.HttpContext?.GetUserContext()?.Email,
-                correlationIdProvider: () => httpContextAccessor.HttpContext?.GetCorrelationId(),
-                ipAddressProvider: () => httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString()
-            );
+            // SharedLibrary: audit interceptor (uses IServiceProvider overload)
+            options.AddAuditInterceptor(sp);
         });
 
         // ── AutoMapper ─────────────────────────────────────────

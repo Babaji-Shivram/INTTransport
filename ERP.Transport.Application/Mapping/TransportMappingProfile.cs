@@ -3,6 +3,7 @@ using ERP.Transport.Application.DTOs.Job;
 using ERP.Transport.Application.DTOs.Expense;
 using ERP.Transport.Application.DTOs.Common;
 using ERP.Transport.Application.DTOs.ConsolidatedTrip;
+using ERP.Transport.Application.DTOs.Rate;
 using ERP.Transport.Application.DTOs.Warehouse;
 using ERP.Transport.Domain.Entities;
 
@@ -117,5 +118,19 @@ public class TransportMappingProfile : Profile
         CreateMap<ConsolidatedExpense, ConsolidatedExpenseDto>();
         CreateMap<CreateConsolidatedExpenseDto, ConsolidatedExpense>();
         CreateMap<ConsolidatedStopDelivery, ConsolidatedStopDeliveryDto>();
+
+        // ── VehicleRate (Rate Management) ──────────────────────
+        CreateMap<VehicleRate, VehicleRateMasterDto>();
+        CreateMap<VehicleRate, VehicleRateListDto>();
+        CreateMap<CreateVehicleRateRequest, VehicleRate>()
+            .ForMember(d => d.Id, opt => opt.Ignore())
+            .ForMember(d => d.TotalRate, opt => opt.Ignore())
+            .ForMember(d => d.IsApproved, opt => opt.Ignore())
+            .ForMember(d => d.ApprovedAmount, opt => opt.Ignore())
+            .ForMember(d => d.ApprovedBy, opt => opt.Ignore())
+            .ForMember(d => d.ApprovedDate, opt => opt.Ignore())
+            .ForMember(d => d.ApprovalRemarks, opt => opt.Ignore())
+            .ForMember(d => d.CreatedDate, opt => opt.Ignore())
+            .ForMember(d => d.CreatedBy, opt => opt.Ignore());
     }
 }
