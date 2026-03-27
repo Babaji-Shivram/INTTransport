@@ -68,6 +68,13 @@ public class TransportRequest : BaseEntity
     public string? WorkflowStatus { get; set; }
     public Guid? WorkflowStepId { get; set; }
 
+    /// <summary>
+    /// Stores dynamic form field values from Workflow-defined fields as JSON.
+    /// Enables Workflow admin to add/remove fields without requiring DB migrations.
+    /// Format: { "FieldCode": "value", "FieldCode2": "value2" }
+    /// </summary>
+    public string? FormData { get; set; }
+
     // ── Consolidation ───────────────────────────────────────────
     public Guid? ConsolidatedTripId { get; set; }
     public bool IsConsolidated { get; set; }

@@ -35,6 +35,7 @@ public class TransportRequestConfiguration : BaseEntityConfiguration<TransportRe
         builder.Property(e => e.Division).HasMaxLength(50);
         builder.Property(e => e.Plant).HasMaxLength(100);
         builder.Property(e => e.WorkflowStatus).HasMaxLength(50);
+        builder.Property(e => e.FormData).HasColumnType("nvarchar(max)");
         builder.Property(e => e.SourceReferenceNumber).HasMaxLength(50);
         builder.Property(e => e.RequestDate).HasColumnType("datetime2(7)");
         builder.Property(e => e.RequiredDeliveryDate).HasColumnType("datetime2(7)");
