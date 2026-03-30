@@ -1,4 +1,5 @@
 using ERP.Transport.Domain.Entities;
+using EPR.Shared.Contracts.Entities;
 using EPR.Shared.Contracts.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -65,6 +66,9 @@ public class TransportDbContext : DbContext
     // ── CharteredInfo (e-Invoice / GST) ─────────────────────────
     public DbSet<EInvoice> EInvoices { get; set; } = null!;
     public DbSet<GstDetail> GstDetails { get; set; } = null!;
+
+    // ── Dynamic Fields (Workflow-driven EAV) ────────────────────
+    public DbSet<DynamicFieldDetail> DynamicFieldDetails { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ERP.Transport.Domain\ERP.Transport.Domain.csproj" />
-    <PackageReference Include="EPR.Shared.Contracts" Version="2.0.4" />
+    <PackageReference Include="EPR.Shared.Contracts" Version="2.1.0" />
   </ItemGroup>
 
   <ItemGroup>
