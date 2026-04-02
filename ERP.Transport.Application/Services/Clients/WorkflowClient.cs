@@ -184,19 +184,19 @@ public class WorkflowClient : IWorkflowClient
     }
 
     public async Task<WorkflowTemplateLookupDto?> LookupTemplateAsync(
-        string templateCode, string countryCode)
+        string module, string entity, string action, string? countryCode = null)
     {
         try
         {
-            var request = new { Module = "Transport", TemplateCode = templateCode, CountryCode = countryCode };
+            var request = new { Module = module, Entity = entity, Action = action, CountryCode = countryCode };
             var response = await _httpClient.PostAsJsonAsync(
                 "internal/workflow/metadata/templates/lookup", request, JsonOptions);
             return await ReadDataAsync<WorkflowTemplateLookupDto>(response, "LookupTemplate");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to lookup template {TemplateCode}/{CountryCode}",
-                templateCode, countryCode);
+            _logger.LogError(ex, "Failed to lookup template {Module}/{Entity}/{Action}",
+                module, entity, action);
             return null;
         }
     }

@@ -1442,15 +1442,12 @@ public class TransportJobService : ITransportJobService
     {
         try
         {
-            var templateCode = _configuration[$"WorkflowTemplates:Transport_{entity.CountryCode}:TemplateCode"]
-                ?? $"TRANSPORT_JOB_{entity.CountryCode}";
-
             // Step 1: Lookup template to get the active WorkflowVersionId
-            var template = await _workflowClient.LookupTemplateAsync(templateCode, entity.CountryCode);
+            var template = await _workflowClient.LookupTemplateAsync("Transport", "Job", "Create", entity.CountryCode);
             if (template?.ActiveVersionId == null)
             {
-                _logger.LogWarning("No active workflow template found for {TemplateCode}/{CountryCode}. Job created without workflow.",
-                    templateCode, entity.CountryCode);
+                _logger.LogWarning("No active workflow template found for Transport/Job/Create/{CountryCode}. Job created without workflow.",
+                    entity.CountryCode);
                 return;
             }
 

@@ -21,7 +21,7 @@ public interface IWorkflowClient
     // ── Metadata ────────────────────────────────────────────────
     Task<WorkflowStepDefinitionDto?> GetStepFieldsAsync(Guid stepId);
     Task<WorkflowStepFullDefinitionDto?> GetStepFullDefinitionAsync(Guid stepId);
-    Task<WorkflowTemplateLookupDto?> LookupTemplateAsync(string templateCode, string countryCode);
+    Task<WorkflowTemplateLookupDto?> LookupTemplateAsync(string module, string entity, string action, string? countryCode = null);
 
     // ── Inbox ───────────────────────────────────────────────────
     Task<IEnumerable<WorkflowInboxItemDto>> GetInboxAsync(Guid userId);
