@@ -10,6 +10,8 @@ using ERP.Transport.Application.Interfaces.Repositories;
 using ERP.Transport.Application.Interfaces.Clients;
 using ERP.Transport.Domain.Entities;
 using ERP.Transport.Domain.Enums;
+using EPR.Shared.Contracts.Entities;
+using EPR.Shared.Contracts.Models;
 using ERP.Transport.Domain.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -35,6 +37,7 @@ public class TransportJobService : ITransportJobService
     private readonly IRepository<ConsolidatedStopDelivery> _stopDeliveryRepo;
     private readonly IRepository<TransitWarehouse> _transitWarehouseRepo;
     private readonly IRepository<ExpenseApproval> _expenseApprovalRepo;
+    private readonly IDynamicFieldDetailRepository _dynamicFieldDetailRepo;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IWorkflowClient _workflowClient;
@@ -58,6 +61,7 @@ public class TransportJobService : ITransportJobService
         IRepository<ConsolidatedStopDelivery> stopDeliveryRepo,
         IRepository<TransitWarehouse> transitWarehouseRepo,
         IRepository<ExpenseApproval> expenseApprovalRepo,
+        IDynamicFieldDetailRepository dynamicFieldDetailRepo,
         IUnitOfWork unitOfWork,
         IMapper mapper,
         IWorkflowClient workflowClient,
@@ -80,6 +84,7 @@ public class TransportJobService : ITransportJobService
         _stopDeliveryRepo = stopDeliveryRepo;
         _transitWarehouseRepo = transitWarehouseRepo;
         _expenseApprovalRepo = expenseApprovalRepo;
+        _dynamicFieldDetailRepo = dynamicFieldDetailRepo;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _workflowClient = workflowClient;
@@ -111,6 +116,32 @@ public class TransportJobService : ITransportJobService
 
         await _jobRepo.AddAsync(entity);
         await _unitOfWork.SaveChangesAsync();
+
+        // Save dynamic fields (same pattern as CRM LeadService)
+        if (dto.DynamicFields != null && dto.DynamicFields.Any())
+        {
+            foreach (var field in dto.DynamicFields)
+            {
+                var detail = new DynamicFieldDetail
+                {
+                    Id = Guid.NewGuid(),
+                    ParentEntityId = entity.Id,
+                    ParentEntityType = "TransportRequest",
+                    FieldName = field.FieldName,
+                    FieldValue = field.FieldValue,
+                    FieldType = field.FieldType,
+                    DisplayOrder = field.DisplayOrder,
+                    Section = field.Section,
+                    SectionOrder = field.SectionOrder,
+                    IsRequired = field.IsRequired,
+                    StepCode = field.StepCode,
+                    CreatedDate = DateTime.UtcNow,
+                    Version = 1
+                };
+                await _dynamicFieldDetailRepo.AddAsync(detail);
+            }
+            await _unitOfWork.SaveChangesAsync();
+        }
 
         // Start workflow (non-fatal)
         await StartWorkflowAsync(entity, userId);

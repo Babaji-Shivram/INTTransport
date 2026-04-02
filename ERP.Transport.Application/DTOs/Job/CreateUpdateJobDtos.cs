@@ -1,3 +1,4 @@
+using EPR.Shared.Contracts.Models;
 using ERP.Transport.Domain.Enums;
 
 namespace ERP.Transport.Application.DTOs.Job;
@@ -48,6 +49,9 @@ public class CreateTransportJobDto
     // Organisation
     public string? Division { get; set; }
     public string? Plant { get; set; }
+
+    // Dynamic Fields (Workflow-driven EAV)
+    public List<SaveDynamicFieldRequest>? DynamicFields { get; set; }
 }
 
 /// <summary>Create job from CRM enquiry (MS-to-MS).</summary>
